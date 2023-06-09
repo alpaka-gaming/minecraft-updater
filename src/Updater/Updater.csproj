@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="..\.imports\Template.props" />
+	<Import Condition="Exists('Options.props')" Project="Options.props" />
+	<Import Project="..\.imports\Template.targets" />
+	<Import Condition="Exists('Options.targets')" Project="Options.targets" />
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<ApplicationIcon>Icon.ico</ApplicationIcon>
+		<TargetFramework>net6.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Flurl" Version="3.0.7" />
+		<PackageReference Include="Flurl.Http" Version="3.2.4" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.3" />
+	</ItemGroup>
+
+	<ItemGroup Label="Serilog">
+		<PackageReference Include="Serilog" Version="2.12.0" />
+		<PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+		<PackageReference Include="Serilog.Enrichers.Process" Version="2.0.2" />
+		<PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
+		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="appsettings.Development.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\Strings.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Shared.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings.es.resx">
+			<DependentUpon>Strings.resx</DependentUpon>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Resources\Strings.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Strings.resx</DependentUpon>
+		</Compile>
+		<Compile Update="..\.files\AssemblyInfo.Version.cs">
+		  <DependentUpon>AssemblyInfo.Version.tt</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="..\.files\AssemblyInfo.Version.tt">
+	    <Generator>TextTemplatingFileGenerator</Generator>
+	    <LastGenOutput>AssemblyInfo.Version.cs</LastGenOutput>
+	    <DependentUpon>AssemblyInfo.cs</DependentUpon>
+	  </None>
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:element name="root" msdata:IsDataSet="true">
+			
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>1.3</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="PressAnyKey" xml:space="preserve">
+		<value>Press any key to finalize.</value>
+	</data>
+	<data name="UnabledToConnect" xml:space="preserve">
+		<value />
+	</data>
+	<data name="UnabledToGetProfile" xml:space="preserve">
+		<value />
+	</data>
+	<data name="UnabledToGetGamePath" xml:space="preserve">
+		<value />
+	</data>
+	<data name="UnabledToValidateProfile" xml:space="preserve">
+		<value />
+	</data>
+	<data name="Profile" xml:space="preserve">
+		<value>Profile</value>
+	</data>
+	<data name="Processing" xml:space="preserve">
+		<value>Processing</value>
+	</data>
+	<data name="Installing" xml:space="preserve">
+		<value>Installing</value>
+	</data>
+	<data name="Done" xml:space="preserve">
+		<value>DONE</value>
+	</data>
+	<data name="Deleting" xml:space="preserve">
+		<value>Deleting</value>
+	</data>
+	<data name="Error" xml:space="preserve">
+		<value>ERROR</value>
+	</data>
+	<data name="Connecting" xml:space="preserve">
+		<value>Connecting with server</value>
+	</data>
+	<data name="Failed" xml:space="preserve">
+		<value>FAILED</value>
+	</data>
+	<data name="RetryInSeconds" xml:space="preserve">
+		<value>Retry in {0} seconds.</value>
+	</data>
+	<data name="GetingProfile" xml:space="preserve">
+		<value>Getting profile:</value>
+	</data>
+	<data name="MustDownloadIn" xml:space="preserve">
+		<value>Must download last updater version in:</value>
+	</data>
+	<data name="GettingGamePath" xml:space="preserve">
+		<value>Getting game path:</value>
+	</data>
+</root>

@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 3
+      - name: Permissions
+        run: chmod +x build.sh
+      - name: Nuke
+        run: ./build.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: |
+            output/*.zip
+          if-no-files-found: warn
+      - name: Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: |
+            output/*.zip
+          if-no-files-found: warn
+  publish:
+    name: Publish
+    needs: build
+    environment:
+      name: 'Production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+
+      - name: Release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          draft: false
+          prerelease: false
+          artifacts: |
+            *.zip
