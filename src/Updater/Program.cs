@@ -141,13 +141,13 @@ namespace Updater
 				if (string.IsNullOrWhiteSpace(gamePath)) gamePath = GamePath;
 				gamePath = Environment.ExpandEnvironmentVariables(gamePath);
 
-				var serverDatFile = Path.Combine(gamePath, "servers.dat");
-				if (!File.Exists(serverDatFile))
+				var serverDatFile = new FileInfo(Path.Combine(gamePath, "servers.dat"));
+				if (!serverDatFile.Exists)
 				{
 					try
 					{
-						var urlTemp = $"{Server}minecraft/profiles/{Profile}/servers.dat";
-						await urlTemp.DownloadFileAsync(serverDatFile);
+						var urlTemp = $"{Server}minecraft/downloads/{Profile}/{versionPath}/servers.dat";
+						await urlTemp.DownloadFileAsync(serverDatFile.Directory.FullName);
 					}
 					catch (Exception)
 					{
@@ -155,13 +155,13 @@ namespace Updater
 					}
 				}
 
-				var optionsTxtFile = Path.Combine(gamePath, "options.txt");
-				if (!File.Exists(optionsTxtFile))
+				var optionsTxtFile = new FileInfo(Path.Combine(gamePath, "options.txt"));
+				if (!optionsTxtFile.Exists)
 				{
 					try
 					{
-						var urlTemp = $"{Server}minecraft/profiles/{Profile}/options.txt";
-						await urlTemp.DownloadFileAsync(optionsTxtFile);
+						var urlTemp = $"{Server}minecraft/downloads/{Profile}/{versionPath}/options.txt";
+						await urlTemp.DownloadFileAsync(optionsTxtFile.Directory.FullName);
 					}
 					catch (Exception)
 					{
