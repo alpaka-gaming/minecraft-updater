@@ -179,37 +179,64 @@ namespace Updater.Resources {
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string UnabledToConnect {
+        internal static string UnableToConnect {
             get {
-                return ResourceManager.GetString("UnabledToConnect", resourceCulture);
+                return ResourceManager.GetString("UnableToConnect", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string UnabledToGetGamePath {
+        internal static string UnableToGetGamePath {
             get {
-                return ResourceManager.GetString("UnabledToGetGamePath", resourceCulture);
+                return ResourceManager.GetString("UnableToGetGamePath", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string UnabledToGetProfile {
+        internal static string UnableToGetProfile {
             get {
-                return ResourceManager.GetString("UnabledToGetProfile", resourceCulture);
+                return ResourceManager.GetString("UnableToGetProfile", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
-        internal static string UnabledToValidateProfile {
+        internal static string UnableToValidateProfile {
             get {
-                return ResourceManager.GetString("UnabledToValidateProfile", resourceCulture);
+                return ResourceManager.GetString("UnableToValidateProfile", resourceCulture);
             }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string NoProfileFound {
+	        get {
+		        return ResourceManager.GetString("NoProfileFound", resourceCulture);
+	        }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string DownloadLoaderFrom {
+	        get {
+		        return ResourceManager.GetString("DownloadLoaderFrom", resourceCulture);
+	        }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string ProfileMismatch {
+	        get {
+		        return ResourceManager.GetString("ProfileMismatch", resourceCulture);
+	        }
         }
     }
 }
