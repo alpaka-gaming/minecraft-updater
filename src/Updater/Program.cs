@@ -120,7 +120,7 @@ namespace Updater
 				if (profile.Value.LastVersionId != loaderName)
 				{
 					Console.ForegroundColor = ConsoleColor.DarkRed;
-					Console.WriteLine(Strings.ProfileMismatch, Strings.Profile, profile.Value.Name, profile.Value.LastVersionId);
+					Console.WriteLine(Strings.ProfileMismatch, Profile, profile.Value.Name, loaderName, profile.Value.LastVersionId);
 
 					var downloadUrl = string.Empty;
 					//if (versionFabric != null) downloadUrl = $"https://meta.fabricmc.net/v2/versions/loader/{Versions["Minecraft"]}/{versionFabric}/0.11.2/server/jar";
@@ -148,6 +148,20 @@ namespace Updater
 					{
 						var urlTemp = $"{Server}minecraft/profiles/{Profile}/servers.dat";
 						await urlTemp.DownloadFileAsync(serverDatFile);
+					}
+					catch (Exception)
+					{
+						// ignored
+					}
+				}
+
+				var optionsTxtFile = Path.Combine(gamePath, "options.txt");
+				if (!File.Exists(optionsTxtFile))
+				{
+					try
+					{
+						var urlTemp = $"{Server}minecraft/profiles/{Profile}/options.txt";
+						await urlTemp.DownloadFileAsync(optionsTxtFile);
 					}
 					catch (Exception)
 					{
