@@ -14,16 +14,16 @@
 	<data name="PressAnyKey" xml:space="preserve">
 		<value>Presione cualquier tecla para finalizar.</value>
 	</data>
-	<data name="UnabledToConnect" xml:space="preserve">
+	<data name="UnableToConnect" xml:space="preserve">
 		<value>No se pudo conectar al servidor.</value>
 	</data>
-	<data name="UnabledToGetProfile" xml:space="preserve">
+	<data name="UnableToGetProfile" xml:space="preserve">
 		<value>No se pudo obtener el perfil del juego.</value>
 	</data>
-	<data name="UnabledToGetGamePath" xml:space="preserve">
+	<data name="UnableToGetGamePath" xml:space="preserve">
 		<value>No se pudo encontrar al ruta del juego.</value>
 	</data>
-	<data name="UnabledToValidateProfile" xml:space="preserve">
+	<data name="UnableToValidateProfile" xml:space="preserve">
 		<value>No se pudo validar el perfil.</value>
 	</data>
 	<data name="Profile" xml:space="preserve">
@@ -61,5 +61,14 @@
 	</data>
 	<data name="GettingGamePath" xml:space="preserve">
 		<value>Obteniendo ruta del juego:</value>
+	</data>
+	<data name="NoProfileFound" xml:space="preserve">
+		<value>El perfil '{0}' no se pudo encontrar.</value>
+	</data>
+	<data name="DownloadLoaderFrom" xml:space="preserve">
+		<value>Descargue el cargador requerido desde: {0}</value>
+	</data>
+	<data name="ProfileMismatch" xml:space="preserve">
+		<value>{0}: {1} ({2}) no cumple con los requerimientos ({3}).</value>
 	</data>
 </root>

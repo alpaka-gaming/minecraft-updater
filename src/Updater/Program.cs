@@ -87,22 +87,50 @@ namespace Updater
 
 		public static async Task MainAsync()
 		{
-			if (!await ConnectServer()) throw new OperationCanceledException(Strings.UnabledToConnect);
-			if (!await GetProfile()) throw new OperationCanceledException(Strings.UnabledToGetProfile);
-			if (!await FindGame()) throw new OperationCanceledException(Strings.UnabledToGetGamePath);
+			if (!await ConnectServer()) throw new OperationCanceledException(Strings.UnableToConnect);
+			if (!await GetProfile()) throw new OperationCanceledException(Strings.UnableToGetProfile);
+			if (!await FindGame()) throw new OperationCanceledException(Strings.UnableToGetGamePath);
 
 			ValidateVersion();
 
 			await PrintInfo();
 
-			if (!await ValidateProfile()) throw new OperationCanceledException(Strings.UnabledToValidateProfile);
+			if (!await ValidateProfile()) throw new OperationCanceledException(Strings.UnableToValidateProfile);
 
 			var profiles = Profiles
 				.Where(m => !string.IsNullOrWhiteSpace(m.Value.Toolchain))
 				.Where(m => m.Value.Name.Equals(Profile, StringComparison.InvariantCultureIgnoreCase))
-				.OrderByDescending(m => m.Value.Created);
+				.OrderByDescending(m => m.Value.Created)
+				.ToArray();
+
+			if (profiles != null && !profiles.Any()) throw new OperationCanceledException(string.Format(Strings.NoProfileFound, Profile));
+
 			foreach (var profile in profiles)
 			{
+				var loaderName = string.Empty;
+				Version versionFabric;
+				Version versionForge;
+
+				Versions.TryGetValue("Fabric", out versionFabric);
+				Versions.TryGetValue("Forge", out versionForge);
+
+				if (versionFabric != null) loaderName = $"fabric-loader-{versionFabric}-{Versions["Minecraft"]}".ToLowerInvariant();
+				if (versionForge != null) loaderName = $"{Versions["Minecraft"]}-forge-{versionForge}".ToLowerInvariant();
+
+				if (profile.Value.LastVersionId != loaderName)
+				{
+					Console.ForegroundColor = ConsoleColor.DarkRed;
+					Console.WriteLine(Strings.ProfileMismatch, Strings.Profile, profile.Value.Name, profile.Value.LastVersionId);
+
+					var downloadUrl = string.Empty;
+					//if (versionFabric != null) downloadUrl = $"https://meta.fabricmc.net/v2/versions/loader/{Versions["Minecraft"]}/{versionFabric}/0.11.2/server/jar";
+					if (versionFabric != null) downloadUrl = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.2/fabric-installer-0.11.2.jar";
+					if (versionForge != null) downloadUrl = $"https://maven.minecraftforge.net/net/minecraftforge/forge/{Versions["Minecraft"]}-{Versions["Forge"]}/forge-{Versions["Minecraft"]}-{Versions["Forge"]}-installer.jar";
+					if (!string.IsNullOrWhiteSpace(downloadUrl)) Console.WriteLine(Strings.DownloadLoaderFrom, downloadUrl);
+					Console.ResetColor();
+					break;
+				}
+
 				var versionPath = $"{Versions["Minecraft"]}-{profile.Value.Toolchain}-{Versions[profile.Value.Toolchain]}".ToLowerInvariant();
 
 				Console.ForegroundColor = ConsoleColor.Yellow;

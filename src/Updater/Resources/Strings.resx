@@ -21,17 +21,17 @@
 	<data name="PressAnyKey" xml:space="preserve">
 		<value>Press any key to finalize.</value>
 	</data>
-	<data name="UnabledToConnect" xml:space="preserve">
-		<value />
+	<data name="UnableToConnect" xml:space="preserve">
+		<value>Unable to connect to server.</value>
 	</data>
-	<data name="UnabledToGetProfile" xml:space="preserve">
-		<value />
+	<data name="UnableToGetProfile" xml:space="preserve">
+		<value>Unable to get game profile.</value>
 	</data>
-	<data name="UnabledToGetGamePath" xml:space="preserve">
-		<value />
+	<data name="UnableToGetGamePath" xml:space="preserve">
+		<value>Unable to find game path.</value>
 	</data>
-	<data name="UnabledToValidateProfile" xml:space="preserve">
-		<value />
+	<data name="UnableToValidateProfile" xml:space="preserve">
+		<value>Unable to validate game profile.</value>
 	</data>
 	<data name="Profile" xml:space="preserve">
 		<value>Profile</value>
@@ -68,5 +68,14 @@
 	</data>
 	<data name="GettingGamePath" xml:space="preserve">
 		<value>Getting game path:</value>
+	</data>
+	<data name="NoProfileFound" xml:space="preserve">
+		<value>Profile '{0}' was not found.</value>
+	</data>
+	<data name="DownloadLoaderFrom" xml:space="preserve">
+		<value>Download required loader from: {0}</value>
+	</data>
+	<data name="ProfileMismatch" xml:space="preserve">
+		<value>{0}: {1} ({2}) do not match with the required ({3}).</value>
 	</data>
 </root>
