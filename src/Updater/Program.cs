@@ -98,7 +98,7 @@ namespace Updater
 			if (!await ValidateProfile()) throw new OperationCanceledException(Strings.UnableToValidateProfile);
 
 			var profiles = Profiles
-				.Where(m => !string.IsNullOrWhiteSpace(m.Value.Toolchain))
+				//.Where(m => !string.IsNullOrWhiteSpace(m.Value.Toolchain))
 				.Where(m => m.Value.Name.Equals(Profile, StringComparison.InvariantCultureIgnoreCase))
 				.OrderByDescending(m => m.Value.Created)
 				.ToArray();
