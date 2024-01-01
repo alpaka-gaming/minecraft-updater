@@ -232,6 +232,19 @@ namespace Updater
 					}
 
 				}
+				else if (!optionsTxtFile.Exists)
+				{
+					try
+					{
+						var urlTemp = $"{Server}minecraft/downloads/{Profile}/{versionPath}/options.txt";
+						await urlTemp.DownloadFileAsync(optionsTxtFile.Directory.FullName, cancellationToken: cancellationToken);
+					}
+					catch (Exception)
+					{
+						// ignored
+					}
+
+				}
 
 				// Folders
 				Console.WriteLine();
