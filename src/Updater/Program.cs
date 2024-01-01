@@ -157,8 +157,14 @@ namespace Updater
 					var key = ConsoleKey.Clear;
 					var validKeys = CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
 					{
-						"en" => new[] { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
-						"es" => new[] { ConsoleKey.S, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
+						"en" => new[]
+						{
+							ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter
+						},
+						"es" => new[]
+						{
+							ConsoleKey.S, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter
+						},
 						_ => Array.Empty<ConsoleKey>()
 					};
 
@@ -168,7 +174,7 @@ namespace Updater
 					replaceServerDatFile = key == ConsoleKey.Y || key == ConsoleKey.Enter;
 					Console.WriteLine();
 				}
-				if (replaceServerDatFile)
+				if (replaceServerDatFile || !serverDatFile.Exists)
 				{
 					try
 					{
@@ -191,8 +197,14 @@ namespace Updater
 					var key = ConsoleKey.Clear;
 					var validKeys = CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
 					{
-						"en" => new[] { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
-						"es" => new[] { ConsoleKey.S, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
+						"en" => new[]
+						{
+							ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter
+						},
+						"es" => new[]
+						{
+							ConsoleKey.S, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter
+						},
 						_ => Array.Empty<ConsoleKey>()
 					};
 
@@ -486,17 +498,51 @@ namespace Updater
 		{
 			var profileFiles = new[]
 			{
-				"launcher_profiles.json", "launcher_profiles_microsoft_store.json"
+				"launcher_profiles.json", "launcher_profiles_microsoft_store.json", "TlauncherProfiles.json"
 			};
 			foreach (var item in profileFiles)
 			{
 				var profileFile = Path.Combine(GamePath, item);
 				if (File.Exists(profileFile))
 				{
-					var content = await File.ReadAllTextAsync(profileFile);
-					var profiles = JsonConvert.DeserializeObject<JObject>(content).Children().Where(m => m.Path == "profiles").ToList();
-					var value = profiles.First().First().ToString();
-					Profiles = JsonConvert.DeserializeObject<Dictionary<string, Profile>>(value);
+					if (item != "TlauncherProfiles.json")
+					{
+						var content = await File.ReadAllTextAsync(profileFile);
+						var profiles = JsonConvert.DeserializeObject<JObject>(content).Children().Where(m => m.Path == "profiles").ToList();
+						var value = profiles.First().First().ToString();
+						Profiles = JsonConvert.DeserializeObject<Dictionary<string, Profile>>(value);
+					}
+					else
+					{
+						var folders = Directory.GetDirectories(Path.Combine(GamePath, "versions"))
+							.Where(m => File.Exists(Path.Combine(m, "TLauncherAdditional.json")));
+
+						Profiles = new Dictionary<string, Profile>();
+						foreach (var folder in folders)
+						{
+							var tlProfileFile = Path.Combine(folder, "TLauncherAdditional.json");
+							var content = await File.ReadAllTextAsync(tlProfileFile);
+							var tlAdditional = JsonConvert.DeserializeObject<JObject>(content);
+							var name = tlAdditional.GetValue("modpack")["name"].Value<string>();
+							var jar = tlAdditional.GetValue("jar").Value<string>();
+							var versionType = tlAdditional.GetValue("modpack")["version"]["minecraftVersionTypes"][0]["name"].Value<string>();
+							var versionName = tlAdditional.GetValue("modpack")["version"]["minecraftVersionName"]["name"].Value<string>();
+							var versionId = string.Empty;
+							if (versionType.Contains("fabric")) versionId = $"fabric-loader-{versionName}-{jar}".ToLowerInvariant();
+							if (versionType.Contains("forge")) versionId = $"{jar}-forge-{versionName}".ToLowerInvariant();
+
+							var profile = new Profile()
+							{
+								Created = DateTime.Now,
+								GameDir = Path.Combine(GamePath, "versions", folder),
+								LastUsed = DateTime.Now,
+								LastVersionId = versionId,
+								Name = name,
+								Type = "custom"
+							};
+							Profiles.Add(profile.Name, profile);
+						}
+					}
 					return Profiles.Any();
 				}
 			}
