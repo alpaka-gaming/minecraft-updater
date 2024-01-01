@@ -78,4 +78,10 @@
 	<data name="ProfileMismatch" xml:space="preserve">
 		<value>{0}: {1} ({2}) do not match with the required ({3}).</value>
 	</data>
+	<data name="ReplaceServers" xml:space="preserve">
+		<value>Do you want to replace servers list? (Y/N)</value>
+	</data>
+	<data name="RecommendedOptions" xml:space="preserve">
+		<value>Do you want to download recommended options? (Y/N)</value>
+	</data>
 </root>
