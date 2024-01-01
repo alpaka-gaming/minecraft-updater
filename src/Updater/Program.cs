@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Flurl.Http;
@@ -45,10 +48,15 @@ namespace Updater
 
 		#endregion
 
+		#region MOTD
+
+		private static IEnumerable<string> MotdLines { get; set; }
+
+		#endregion
+
 
 		private static void Main()
 		{
-
 			AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
 			Console.WriteLine($@"{Name} v{Version.ToString(3)}");
@@ -73,7 +81,8 @@ namespace Updater
 			// Execution
 			try
 			{
-				MainAsync().GetAwaiter().GetResult();
+				var cancellationToken = new CancellationTokenSource().Token;
+				MainAsync(cancellationToken).GetAwaiter().GetResult();
 			}
 			catch (Exception e)
 			{
@@ -85,20 +94,18 @@ namespace Updater
 			Console.ReadKey();
 		}
 
-		public static async Task MainAsync()
+		public static async Task MainAsync(CancellationToken cancellationToken = default)
 		{
-			if (!await ConnectServer()) throw new OperationCanceledException(Strings.UnableToConnect);
-			if (!await GetProfile()) throw new OperationCanceledException(Strings.UnableToGetProfile);
-			if (!await FindGame()) throw new OperationCanceledException(Strings.UnableToGetGamePath);
+			if (!await ConnectServer(cancellationToken)) throw new OperationCanceledException(Strings.UnableToConnect);
+			if (!await GetProfile(cancellationToken)) throw new OperationCanceledException(Strings.UnableToGetProfile);
+			if (!FindGame()) throw new OperationCanceledException(Strings.UnableToGetGamePath);
 
 			ValidateVersion();
-
-			await PrintInfo();
+			PrintInfo();
 
 			if (!await ValidateProfile()) throw new OperationCanceledException(Strings.UnableToValidateProfile);
 
 			var profiles = Profiles
-				//.Where(m => !string.IsNullOrWhiteSpace(m.Value.Toolchain))
 				.Where(m => m.Value.Name.Equals(Profile, StringComparison.InvariantCultureIgnoreCase))
 				.OrderByDescending(m => m.Value.Created)
 				.ToArray();
@@ -123,7 +130,6 @@ namespace Updater
 					Console.WriteLine(Strings.ProfileMismatch, Profile, profile.Value.Name, loaderName, profile.Value.LastVersionId);
 
 					var downloadUrl = string.Empty;
-					//if (versionFabric != null) downloadUrl = $"https://meta.fabricmc.net/v2/versions/loader/{Versions["Minecraft"]}/{versionFabric}/0.11.2/server/jar";
 					if (versionFabric != null) downloadUrl = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.2/fabric-installer-0.11.2.jar";
 					if (versionForge != null) downloadUrl = $"https://maven.minecraftforge.net/net/minecraftforge/forge/{Versions["Minecraft"]}-{Versions["Forge"]}/forge-{Versions["Minecraft"]}-{Versions["Forge"]}-installer.jar";
 					if (!string.IsNullOrWhiteSpace(downloadUrl)) Console.WriteLine(Strings.DownloadLoaderFrom, downloadUrl);
@@ -141,13 +147,33 @@ namespace Updater
 				if (string.IsNullOrWhiteSpace(gamePath)) gamePath = GamePath;
 				gamePath = Environment.ExpandEnvironmentVariables(gamePath);
 
+				// Servers
 				var serverDatFile = new FileInfo(Path.Combine(gamePath, "servers.dat"));
-				if (!serverDatFile.Exists)
+				var replaceServerDatFile = false;
+				if (serverDatFile.Exists)
+				{
+					Console.WriteLine();
+					Console.Write($@"{Strings.ReplaceServers}: ");
+					var key = ConsoleKey.Clear;
+					var validKeys = CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
+					{
+						"en" => new[] { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
+						"es" => new[] { ConsoleKey.S, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
+						_ => Array.Empty<ConsoleKey>()
+					};
+
+					while (!validKeys.Contains(key))
+						key = Console.ReadKey().Key;
+
+					replaceServerDatFile = key == ConsoleKey.Y || key == ConsoleKey.Enter;
+					Console.WriteLine();
+				}
+				if (replaceServerDatFile)
 				{
 					try
 					{
 						var urlTemp = $"{Server}minecraft/downloads/{Profile}/{versionPath}/servers.dat";
-						await urlTemp.DownloadFileAsync(serverDatFile.Directory.FullName);
+						await urlTemp.DownloadFileAsync(serverDatFile.Directory.FullName, cancellationToken: cancellationToken);
 					}
 					catch (Exception)
 					{
@@ -155,21 +181,52 @@ namespace Updater
 					}
 				}
 
+				// Options
 				var optionsTxtFile = new FileInfo(Path.Combine(gamePath, "options.txt"));
-				if (!optionsTxtFile.Exists)
+				var replaceOptionsTxtFile = false;
+				if (optionsTxtFile.Exists)
+				{
+					Console.WriteLine();
+					Console.Write($@"{Strings.RecommendedOptions}: ");
+					var key = ConsoleKey.Clear;
+					var validKeys = CultureInfo.CurrentCulture.TwoLetterISOLanguageName switch
+					{
+						"en" => new[] { ConsoleKey.Y, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
+						"es" => new[] { ConsoleKey.S, ConsoleKey.N, ConsoleKey.Escape, ConsoleKey.Enter },
+						_ => Array.Empty<ConsoleKey>()
+					};
+
+					while (!validKeys.Contains(key))
+						key = Console.ReadKey().Key;
+
+					replaceOptionsTxtFile = key == ConsoleKey.Y || key == ConsoleKey.Enter;
+					Console.WriteLine();
+				}
+				if (replaceOptionsTxtFile)
 				{
 					try
 					{
+						var tempFile3 = new FileInfo(Path.GetTempFileName());
+						var tempPath3 = tempFile3.Directory?.FullName;
+
 						var urlTemp = $"{Server}minecraft/downloads/{Profile}/{versionPath}/options.txt";
-						await urlTemp.DownloadFileAsync(optionsTxtFile.Directory.FullName);
+						await urlTemp.DownloadFileAsync(tempPath3, tempFile3.Name, cancellationToken: cancellationToken);
+
+						await PatchOptions(tempFile3, optionsTxtFile, cancellationToken);
 					}
 					catch (Exception)
 					{
 						// ignored
 					}
+
 				}
 
-				var folders = new[] {"mods", "resourcepacks", "shaderpacks"};
+				// Folders
+				Console.WriteLine();
+				var folders = new[]
+				{
+					"mods", "resourcepacks", "shaderpacks"
+				};
 				foreach (var folder in folders)
 				{
 					Console.ForegroundColor = ConsoleColor.Cyan;
@@ -206,7 +263,7 @@ namespace Updater
 									if (directoryInfo != null)
 									{
 										var localFolder = directoryInfo.FullName;
-										await urlTemp.DownloadFileAsync(localFolder);
+										await urlTemp.DownloadFileAsync(localFolder, cancellationToken: cancellationToken);
 
 										Console.ForegroundColor = ConsoleColor.Green;
 										Console.Write($@"[{Strings.Done}]");
@@ -243,7 +300,58 @@ namespace Updater
 				Console.WriteLine("");
 			}
 		}
+		private static async Task PatchOptions(FileInfo source, FileInfo target, CancellationToken cancellationToken = default)
+		{
+			var keys = new Dictionary<string, string>();
+			var linesSource = await File.ReadAllLinesAsync(source.FullName, cancellationToken);
+			foreach (var line in linesSource)
+				if (line.StartsWith("resourcePacks"))
+					keys.Add("resourcePacks", line.Substring(14));
+				else if (line.StartsWith("lang"))
+					keys.Add("lang", line.Substring(5));
+				else
+					keys.Add(line.Split(':')[0], line.Split(':')[1]);
 
+			var linesTarget = await File.ReadAllLinesAsync(target.FullName, cancellationToken);
+			for (var index = 0; index < linesTarget.Length; index++)
+			{
+				var line = linesTarget[index];
+				var l = line.Split(':')[0];
+				//var r = line.Split(':')[1];
+				if (line.StartsWith("resourcePacks") && keys.ContainsKey("resourcePacks"))
+				{
+					var sourceLineContent = JsonConvert.DeserializeObject<List<string>>(line.Substring(14));
+					var targetLineContent = JsonConvert.DeserializeObject<List<string>>(keys["resourcePacks"]).Except(sourceLineContent).ToArray();
+					if (targetLineContent.Any())
+						linesTarget[index] = $"resourcePacks:[{EncodeNonAsciiCharacters(string.Join(",", sourceLineContent.Concat(targetLineContent).Select(m => $"\"{m}\"").ToArray()))}]";
+				}
+				else if (line.StartsWith("lang") && keys.ContainsKey("lang"))
+					linesTarget[index] = $"lang:{keys["lang"]}";
+				else if (line.StartsWith(l) && keys.ContainsKey(l))
+					linesTarget[index] = $"{l}:{keys[l]}";
+			}
+
+			await File.WriteAllLinesAsync(target.FullName, linesTarget, cancellationToken);
+		}
+
+		private static string EncodeNonAsciiCharacters(string value)
+		{
+			var sb = new StringBuilder();
+			foreach (var c in value)
+			{
+				if (c > 127 || c == 38)
+				{
+					// This character is too big for ASCII
+					var encodedValue = "\\u" + ((int)c).ToString("x4");
+					sb.Append(encodedValue);
+				}
+				else
+				{
+					sb.Append(c);
+				}
+			}
+			return sb.ToString();
+		}
 		private static bool PingServer()
 		{
 			try
@@ -263,7 +371,7 @@ namespace Updater
 			}
 		}
 
-		private static async Task<bool> ConnectServer()
+		private static async Task<bool> ConnectServer(CancellationToken cancellationToken = default)
 		{
 			var attempts = 1;
 			var isServerOn = false;
@@ -286,7 +394,7 @@ namespace Updater
 					Console.WriteLine();
 					Console.ResetColor();
 					Console.WriteLine(Strings.RetryInSeconds, attempts);
-					await Task.Delay(attempts * 1000);
+					await Task.Delay(attempts * 1000, cancellationToken);
 				}
 
 				attempts++;
@@ -307,20 +415,26 @@ namespace Updater
 			}
 		}
 
-		private static async Task<bool> GetProfile()
+		private static async Task<bool> GetProfile(CancellationToken cancellationToken = default)
 		{
 			Console.Write(Strings.GetingProfile);
 			try
 			{
-				var tempFile = new FileInfo(Path.GetTempFileName());
-				var tempPath = tempFile.Directory?.FullName;
-				await $"{Server}minecraft/profiles/{Profile}/versions.json".DownloadFileAsync(tempPath, tempFile.Name);
-				var data = await File.ReadAllTextAsync(tempFile.FullName);
+				var tempFile1 = new FileInfo(Path.GetTempFileName());
+				var tempPath1 = tempFile1.Directory?.FullName;
+				await $"{Server}minecraft/profiles/{Profile}/versions.json".DownloadFileAsync(tempPath1, tempFile1.Name, cancellationToken: cancellationToken);
+				var data = await File.ReadAllTextAsync(tempFile1.FullName);
 				var definition = JsonConvert.DeserializeObject<JObject>(data);
 
 				Versions = new Dictionary<string, Version>();
 				foreach (var item in definition.Children())
 					Versions.Add(item.Path, new Version(item.First().ToString() ?? throw new NullReferenceException()));
+
+				var tempFile2 = new FileInfo(Path.GetTempFileName());
+				var tempPath2 = tempFile2.Directory?.FullName;
+				await $"{Server}minecraft/profiles/{Profile}/motd.txt".DownloadFileAsync(tempPath2, tempFile2.Name, cancellationToken: cancellationToken);
+
+				MotdLines = await File.ReadAllLinesAsync(tempFile2.FullName);
 
 				Console.ForegroundColor = ConsoleColor.Green;
 				Console.Write($@" [{Strings.Done}]");
@@ -342,9 +456,8 @@ namespace Updater
 			}
 		}
 
-		private static async Task<bool> FindGame()
+		private static bool FindGame()
 		{
-			await Task.Yield();
 
 			Console.Write(Strings.GettingGamePath);
 
@@ -371,7 +484,10 @@ namespace Updater
 
 		private static async Task<bool> ValidateProfile()
 		{
-			var profileFiles = new[] {"launcher_profiles.json", "launcher_profiles_microsoft_store.json"};
+			var profileFiles = new[]
+			{
+				"launcher_profiles.json", "launcher_profiles_microsoft_store.json"
+			};
 			foreach (var item in profileFiles)
 			{
 				var profileFile = Path.Combine(GamePath, item);
@@ -388,19 +504,12 @@ namespace Updater
 			return false;
 		}
 
-		private static async Task PrintInfo()
+		private static void PrintInfo()
 		{
 			Console.WriteLine();
-			var tempFile = new FileInfo(Path.GetTempFileName());
-			if (tempFile.Directory != null)
-				await $"{Server}minecraft/profiles/{Profile}/motd.txt".DownloadFileAsync(tempFile.Directory.FullName, tempFile.Name);
-			if (File.Exists(tempFile.FullName))
-			{
-				var data = File.ReadAllLines(tempFile.FullName);
-				foreach (var item in data)
+			if (MotdLines != null)
+				foreach (var item in MotdLines)
 					Console.WriteLine(item);
-			}
-
 			Console.WriteLine();
 		}
 

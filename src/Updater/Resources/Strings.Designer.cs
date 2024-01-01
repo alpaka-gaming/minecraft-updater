@@ -238,5 +238,23 @@ namespace Updater.Resources {
 		        return ResourceManager.GetString("ProfileMismatch", resourceCulture);
 	        }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string ReplaceServers {
+	        get {
+		        return ResourceManager.GetString("ReplaceServers", resourceCulture);
+	        }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string RecommendedOptions {
+	        get {
+		        return ResourceManager.GetString("RecommendedOptions", resourceCulture);
+	        }
+        }
     }
 }
